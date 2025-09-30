@@ -1,23 +1,15 @@
 import { useState } from "react";
-import { User, Bell, Globe, LogOut } from "lucide-react";
+import { User, Bell, Globe, LogOut, Cat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Profile() {
   const { toast } = useToast();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [language, setLanguage] = useState("en");
 
   const handleNotificationsToggle = (checked: boolean) => {
     setNotificationsEnabled(checked);
@@ -26,14 +18,6 @@ export default function Profile() {
       description: checked 
         ? "You will receive feeding alerts" 
         : "Feeding notifications have been turned off",
-    });
-  };
-
-  const handleLanguageChange = (value: string) => {
-    setLanguage(value);
-    toast({
-      title: "Language updated",
-      description: `Language changed to ${value === 'en' ? 'English' : value === 'es' ? 'Spanish' : 'French'}`,
     });
   };
 
@@ -62,7 +46,7 @@ export default function Profile() {
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
               <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
-                M
+                <Cat className="h-10 w-10" />
               </AvatarFallback>
             </Avatar>
             <div>
@@ -107,20 +91,11 @@ export default function Profile() {
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Globe className="h-5 w-5 text-muted-foreground" />
-              <Label htmlFor="language" className="text-base font-normal">
+              <Label className="text-base font-normal">
                 Language
               </Label>
             </div>
-            <Select value={language} onValueChange={handleLanguageChange}>
-              <SelectTrigger className="w-[180px]" data-testid="select-language">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="es">Spanish</SelectItem>
-                <SelectItem value="fr">French</SelectItem>
-              </SelectContent>
-            </Select>
+            <span className="text-base font-medium" data-testid="text-language">English</span>
           </div>
         </CardContent>
       </Card>
