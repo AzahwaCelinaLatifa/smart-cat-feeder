@@ -1,0 +1,95 @@
+Create a responsive Progressive Web App (PWA) for a Smart Cat Feeder using React.  
+
+🎨 **Design Style**
+- Simple, modern, smart-home inspired UI
+- Use a soft color palette (white, light gray, light blue, light green for highlights)
+- Clean layout with icons and minimal text
+- Responsive design that adapts to desktop, tablet, and mobile
+- On desktop → navigation bar on the left
+- On mobile → bottom navigation bar
+
+🛠 **Core Features & Pages**
+1. **Home (Dashboard)**
+   - Show next feeding schedule (dummy: "Next feeding: 7:00 PM")
+   - Show food level indicator (progress bar, dummy: 65% full)
+   - Show last feeding time (dummy: "Last fed at 2:00 PM")
+   - Quick “Feed Now” button with confirmation + toast notification
+
+2. **Schedule**
+   - List of feeding schedules (dummy: ["7:00 AM", "12:00 PM", "7:00 PM"])
+   - Add / Edit / Delete schedule buttons
+   - Notifications appear when schedules are changed
+   - Data stored temporarily in state (mock only)
+
+3. **History**
+   - Table/List of past feedings (dummy logs with time & status)
+   - Example: "Fed at 7:00 AM – Success"
+   - Option to clear history
+   - Shows notification when cleared
+
+4. **Control**
+   - Manual "Feed Now" button
+   - Toggle switch for Auto-Feeding (ON/OFF)
+   - Toast notification for actions
+
+5. **Camera**
+   - Placeholder page with "📷 Live Feed coming soon"
+   - Prepare container for future video stream
+   - Dummy button: "Test AI Detection" → shows notification "AI check triggered"
+
+6. **Profile**
+   - User profile section with:
+     - Pet name (dummy: “Mochi”)
+     - Owner name (dummy: “Celina”)
+     - Email (dummy: “user@email.com”)
+   - Settings: Toggle notifications, change language
+   - Logout button
+
+🔔 **Notifications**
+- Use a simple toast system (component `Notification.js`)
+- Triggered after every user action (e.g., feeding, schedule update, clearing history)
+
+📂 **Project Structure**
+src/
+ ├── components/
+ │    ├── Navbar.js            // Responsive navbar with icons
+ │    ├── Notification.js      // Toast notification system
+ │
+ ├── data/
+ │    ├── dummyData.js         // Mock schedules, history, food level
+ │
+ ├── pages/
+ │    ├── Home.js
+ │    ├── Schedule.js
+ │    ├── History.js
+ │    ├── Control.js
+ │    ├── Camera.js
+ │    ├── Profile.js
+ │
+ ├── App.js
+ ├── index.js
+ ├── manifest.json
+ ├── service-worker.js
+ └── styles.css
+
+📦 **Tech Requirements**
+- React Router for navigation
+- Functional components with hooks (useState, useEffect)
+- Use dummy data (JSON in `/data/dummyData.js`)
+- Notifications for every action
+- App should be installable as a PWA:
+  - Include `manifest.json`
+  - Include a basic service worker (`service-worker.js`)
+- Make sure it runs on Replit preview
+
+📑 **Dummy Data Example (dummyData.js)**
+```javascript
+export const schedules = ["7:00 AM", "12:00 PM", "7:00 PM"];
+
+export const history = [
+  { time: "7:00 AM", status: "Fed" },
+  { time: "12:00 PM", status: "Fed" },
+  { time: "7:00 PM", status: "Skipped" }
+];
+
+export const foodLevel = 65; // percent
