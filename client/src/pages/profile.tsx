@@ -33,7 +33,7 @@ export default function Profile() {
     setLanguage(value);
     toast({
       title: "Language updated",
-      description: `Language changed to ${value === 'en' ? 'English' : value === 'es' ? 'Spanish' : 'French'}`,
+      description: "Language changed to English",
     });
   };
 
@@ -117,8 +117,6 @@ export default function Profile() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="en">English</SelectItem>
-                <SelectItem value="es">Spanish</SelectItem>
-                <SelectItem value="fr">French</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -126,10 +124,10 @@ export default function Profile() {
       </Card>
 
       <Button 
-        variant="outline" 
-        className="w-full text-destructive hover:text-destructive"
+        className="w-full border border-input text-destructive hover:text-destructive bg-background"
         onClick={handleLogout}
         data-testid="button-logout"
+        type="button"
       >
         <LogOut className="h-4 w-4 mr-2" />
         Logout

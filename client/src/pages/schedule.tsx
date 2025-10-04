@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Trash2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,44 +14,48 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
+// Service
+import { addSchedule, deleteSchedule } from "@/lib/schedule";
+import { listenSchedules } from "@/src/lib/schedule";
+
 type Schedule = {
   id: string;
   time: string;
+  amount: number;
 };
 
-export default function Schedule() {
+export default function SchedulePage() {
   const { toast } = useToast();
-  const [schedules, setSchedules] = useState<Schedule[]>([
-    { id: "1", time: "07:00" },
-    { id: "2", time: "12:00" },
-    { id: "3", time: "19:00" },
-  ]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newTime, setNewTime] = useState("");
+  const [newAmount, setNewAmount] = useState(50);
 
-  const handleAddSchedule = () => {
+  // Listener realtime
+  useEffect(() => {
+    const unsubscribe = listenSchedules((data) => setSchedules(data));
+    return () => unsubscribe();
+  }, []);
+
+  // Tambah
+  const handleAddSchedule = async () => {
     if (!newTime) return;
-    
-    const newSchedule: Schedule = {
-      id: Date.now().toString(),
-      time: newTime,
-    };
-    
-    setSchedules([...schedules, newSchedule].sort((a, b) => a.time.localeCompare(b.time)));
+    await addSchedule({ time: newTime, amount: newAmount });
     setShowAddDialog(false);
     setNewTime("");
-    
+    setNewAmount(50);
     toast({
-      title: "Schedule added",
-      description: `New feeding time added at ${formatTime(newTime)}`,
+      title: "Added",
+      description: `Feeding at ${formatTime(newTime)} (${newAmount}g)`,
     });
   };
 
-  const handleDeleteSchedule = (id: string, time: string) => {
-    setSchedules(schedules.filter((s) => s.id !== id));
+  // Hapus
+  const handleDeleteSchedule = async (id: string, time: string) => {
+    await deleteSchedule(id);
     toast({
-      title: "Schedule removed",
-      description: `Feeding time at ${formatTime(time)} has been removed`,
+      title: "Removed",
+      description: `Schedule at ${formatTime(time)} deleted`,
     });
   };
 
@@ -67,12 +71,14 @@ export default function Schedule() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Feeding Schedule</h1>
-          <p className="text-muted-foreground mt-1">Manage your cat's feeding times</p>
+          <h1 className="text-3xl font-bold">Feeding Schedule</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage your cat's feeding times
+          </p>
         </div>
-        <Button onClick={() => setShowAddDialog(true)} data-testid="button-add-schedule">
+        <Button onClick={() => setShowAddDialog(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Add Schedule
+          Add
         </Button>
       </div>
 
@@ -82,15 +88,14 @@ export default function Schedule() {
             <CardContent className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
                 <Clock className="h-5 w-5 text-primary" />
-                <span className="text-2xl font-semibold" data-testid={`text-schedule-${schedule.id}`}>
-                  {formatTime(schedule.time)}
+                <span className="text-xl font-semibold">
+                  {formatTime(schedule.time)} ({schedule.amount}g)
                 </span>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => handleDeleteSchedule(schedule.id, schedule.time)}
-                data-testid={`button-delete-${schedule.id}`}
               >
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
@@ -99,12 +104,13 @@ export default function Schedule() {
         ))}
       </div>
 
+      {/* Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Feeding Schedule</DialogTitle>
+            <DialogTitle>Add Schedule</DialogTitle>
             <DialogDescription>
-              Set a new time for automatic feeding
+              Pick time and portion
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -115,20 +121,27 @@ export default function Schedule() {
                 type="time"
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
-                data-testid="input-schedule-time"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount (grams)</Label>
+              <Input
+                id="amount"
+                type="number"
+                value={newAmount}
+                onChange={(e) => setNewAmount(Number(e.target.value))}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)} data-testid="button-cancel-schedule">
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddSchedule} data-testid="button-save-schedule">
-              Add Schedule
-            </Button>
+            <Button onClick={handleAddSchedule}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+  // Fetch initial schedules (in case listener misses any)
