@@ -16,11 +16,21 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 
+import { getFunctions, httpsCallable } from "firebase/functions";
+
 export default function Control() {
   const { toast } = useToast();
+
+  // 🔹 State untuk toggle Auto-Feeding dan dialog
   const [autoFeeding, setAutoFeeding] = useState(true);
   const [showFeedDialog, setShowFeedDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
 
+  // 🔹 Firebase Functions: setup callable function
+  const functions = getFunctions();
+  const feedNowCallable = httpsCallable(functions, "feedNow");
+
+  // 🔹 Toggle Auto-Feeding
   const handleAutoFeedingToggle = (checked: boolean) => {
     setAutoFeeding(checked);
     toast({
@@ -31,21 +41,48 @@ export default function Control() {
     });
   };
 
-  const handleFeedNow = () => {
+  // 🔹 Handle Feed Now
+  const handleFeedNow = async () => {
     setShowFeedDialog(false);
+    setLoading(true);
+
     toast({
       title: "Feeding in progress",
       description: "Dispensing food now...",
     });
+
+    try {
+      // Memanggil Cloud Function feedNow
+      const res = await feedNowCallable({ amount: 50 }); // default 50g
+      const data = res.data as { commandId?: string };
+
+      console.log("FeedNow success:", data);
+
+      toast({
+        title: "Feeding command sent!",
+        description: `Command ID: ${data.commandId}`,
+      });
+    } catch (err: any) {
+      console.error("FeedNow failed:", err);
+      toast({
+        title: "Error sending command",
+        description: err?.message || "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Control Panel</h1>
         <p className="text-muted-foreground mt-1">Manage feeding controls</p>
       </div>
 
+      {/* Manual Feed Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -62,13 +99,15 @@ export default function Control() {
             size="lg"
             className="w-full md:w-auto"
             data-testid="button-manual-feed"
+            disabled={loading}
           >
             <Zap className="h-4 w-4 mr-2" />
-            Feed Now
+            {loading ? "Feeding..." : "Feed Now"}
           </Button>
         </CardContent>
       </Card>
 
+      {/* Auto-Feeding Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -99,6 +138,7 @@ export default function Control() {
         </CardContent>
       </Card>
 
+      {/* Feed Now Dialog */}
       <AlertDialog open={showFeedDialog} onOpenChange={setShowFeedDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -109,7 +149,11 @@ export default function Control() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-manual-feed">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleFeedNow} data-testid="button-confirm-manual-feed">
+            <AlertDialogAction 
+              onClick={handleFeedNow} 
+              data-testid="button-confirm-manual-feed"
+              disabled={loading}
+            >
               Confirm
             </AlertDialogAction>
           </AlertDialogFooter>
